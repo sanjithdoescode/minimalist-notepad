@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimalist Notepad</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- CDN Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" class="prism-dark-theme" disabled>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/contrib/auto-render.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">Minimalist Notepad</h1>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-icon" id="theme-toggle" title="Toggle Theme">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="4"></circle>
+                        <path d="m12 2l1.09 1.09L15 2L13.91 3.91L15 5l-1.09 1.09L12 5l-1.09 1.09L9 5l1.09-1.09L9 2l1.09 1.09L12 2z"></path>
+                    </svg>
+                </button>
+                <button class="btn btn-icon" id="settings-btn" title="Settings">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1m11-7a3 3 0 0 1-3 3 3 3 0 0 1-3-3m6 14a3 3 0 0 1-3-3 3 3 0 0 1 3-3"></path>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <button class="btn btn-small" id="new-doc">New</button>
+                <button class="btn btn-small" id="save-doc">Save</button>
+                <button class="btn btn-small" id="search-btn">Find</button>
+                <div class="separator"></div>
+                <button class="btn btn-small" id="focus-mode">Focus Mode</button>
+                <button class="btn btn-small" id="typewriter-mode">Typewriter Mode</button>
+                <button class="btn btn-small" id="sound-toggle">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="toolbar-right">
+                <button class="btn btn-small" id="copy-btn">Copy</button>
+                <button class="btn btn-small" id="export-pdf">Export PDF</button>
+                <button class="btn btn-small" id="export-txt">Export TXT</button>
+            </div>
+        </div>
+
+        <!-- Document Tabs -->
+        <div class="tabs-container">
+            <div class="tabs" id="document-tabs">
+                <div class="tab active" data-id="1">
+                    <span class="tab-title">Untitled</span>
+                    <button class="tab-close">×</button>
+                </div>
+            </div>
+            <button class="btn btn-icon btn-small" id="add-tab">+</button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="editor-container">
+                <textarea 
+                    id="editor" 
+                    class="editor"
+                    placeholder="Start typing your markdown here..."
+                    spellcheck="false"
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="off"
+                ></textarea>
+            </div>
+            <div class="preview-container">
+                <div id="preview" class="preview"></div>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span id="word-count">0 words</span>
+                <span id="char-count">0 characters</span>
+            </div>
+            <div class="status-right">
+                <span id="save-status">Saved</span>
+                <span id="current-mode">Edit</span>
+            </div>
+        </div>
+
+        <!-- Search Modal -->
+        <div class="modal" id="search-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Find & Replace</h3>
+                    <button class="btn btn-icon" id="close-search">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <input type="text" id="search-input" class="form-control" placeholder="Find...">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="replace-input" class="form-control" placeholder="Replace with...">
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="regex-checkbox"> Use Regular Expression
+                        </label>
+                        <label>
+                            <input type="checkbox" id="case-sensitive"> Case Sensitive
+                        </label>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn btn-small" id="find-next">Find Next</button>
+                        <button class="btn btn-small" id="replace-btn">Replace</button>
+                        <button class="btn btn-small" id="replace-all">Replace All</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div class="modal" id="settings-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Settings</h3>
+                    <button class="btn btn-icon" id="close-settings">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Font Size</label>
+                        <input type="range" id="font-size-slider" class="form-control" min="12" max="24" value="16">
+                        <span id="font-size-value">16px</span>
+                    </div>
+                    <div class="form-group">
+                        <label>Line Height</label>
+                        <input type="range" id="line-height-slider" class="form-control" min="1.2" max="2" step="0.1" value="1.5">
+                        <span id="line-height-value">1.5</span>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="auto-save-toggle"> Auto Save
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio for typewriter sounds -->
+    <audio id="typewriter-sound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBziR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBziR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBziR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBziR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBziR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBziR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBziR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBziR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBziR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBziR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBziR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBziR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBziR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBziR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBziR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBziR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBziR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBziR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBziR1/LNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBw==" type="audio/wav">
+    </audio>
+
+    <script src="app.js"></script>
+</body>
+</html>
